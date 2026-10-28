@@ -1,0 +1,20 @@
+name: build-from-zip
+on: [push, workflow_dispatch]
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q Ansa.zip -d src
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: 8.10.2 }
+      - name: Build APK
+        run: |
+          cd "$(dirname "$(find src -name settings.gradle.kts | head -1)")"
+          gradle --no-daemon :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MayaAI-debug-apk
+          path: src/**/app/build/outputs/apk/debug/app-debug.apk
